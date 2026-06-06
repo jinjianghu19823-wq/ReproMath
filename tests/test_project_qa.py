@@ -179,6 +179,59 @@ source = "toy"
     assert "notebook_qa__notebook-second-exploratory.md" in project_markdown
 
 
+def test_project_qa_deduplicates_colliding_notebook_report_stems(
+    tmp_path: Path,
+) -> None:
+    project_root = tmp_path / "project"
+    project_root.mkdir()
+    first_path = create_notebook_scaffold("First", base_dir=project_root)
+    second_path = create_notebook_scaffold("Second", base_dir=project_root)
+    (project_root / "repromath.toml").write_text(
+        f"""
+[project]
+name = "demo"
+type = "numerical-experiment"
+
+[paths]
+reports = "reports"
+
+[[artifacts]]
+id = "Notebook A"
+type = "notebook"
+output = "{first_path.relative_to(project_root)}"
+source = "toy"
+
+[[artifacts]]
+id = "notebook/a"
+type = "notebook"
+output = "{second_path.relative_to(project_root)}"
+source = "toy"
+""",
+        encoding="utf-8",
+    )
+
+    result = run_project_qa(project_root)
+
+    assert result.status == "PASS"
+    assert len(result.notebook_statuses) == 2
+    child_reports = [Path(item["report"]) for item in result.notebook_statuses]
+    assert child_reports == [
+        project_root / "reports" / "notebook_qa__notebook-a.md",
+        project_root / "reports" / "notebook_qa__notebook-a-2.md",
+    ]
+    for markdown_report in child_reports:
+        assert markdown_report.is_file()
+        assert markdown_report.with_suffix(".json").is_file()
+
+    project_json = json.loads(
+        (project_root / "reports" / "project_qa.json").read_text(encoding="utf-8")
+    )
+    json_child_reports = [
+        Path(item["report"]) for item in project_json["notebook_statuses"]
+    ]
+    assert json_child_reports == child_reports
+
+
 def test_cli_project_qa_writes_reports(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr("repromath.latex.compile.shutil.which", lambda _: None)
     project_root = create_project("dissertation", "demo", base_dir=tmp_path)

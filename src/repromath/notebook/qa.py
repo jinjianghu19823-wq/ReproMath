@@ -89,7 +89,7 @@ def run_notebook_qa(
 
     reports_dir = _reports_dir(notebook_path, cwd=cwd)
     reports_dir.mkdir(parents=True, exist_ok=True)
-    report_stem = report_stem.strip() or "notebook_qa"
+    report_stem = _safe_report_stem(report_stem)
     markdown_path = reports_dir / f"{report_stem}.md"
     json_path = reports_dir / f"{report_stem}.json"
 
@@ -336,6 +336,15 @@ def _format_runtime(seconds: float | None) -> str:
     if seconds is None:
         return "unknown runtime"
     return f"{seconds:.2f}s"
+
+
+def _safe_report_stem(report_stem: str) -> str:
+    safe_stem = re.sub(
+        r"[^a-zA-Z0-9_.-]+",
+        "-",
+        report_stem.strip(),
+    ).strip("-_.")
+    return safe_stem or "notebook_qa"
 
 
 def _json_report(result: NotebookQaResult) -> dict[str, object]:

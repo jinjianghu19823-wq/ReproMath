@@ -77,6 +77,30 @@ def test_notebook_qa_warns_for_stale_outputs(tmp_path: Path) -> None:
     assert "## Stale Output Warnings" in markdown_report
 
 
+def test_notebook_qa_sanitizes_report_stem(tmp_path: Path) -> None:
+    project_root = tmp_path / "project"
+    project_root.mkdir()
+    (project_root / "repromath.toml").write_text(
+        "[project]\nname = \"x\"\n",
+        encoding="utf-8",
+    )
+    notebook_path = create_notebook_scaffold("SVD", base_dir=project_root)
+
+    result = run_notebook_qa(
+        notebook_path,
+        cwd=project_root,
+        report_stem="../bad/path",
+    )
+
+    reports_dir = project_root / "reports"
+    assert Path(result.report_markdown) == reports_dir / "bad-path.md"
+    assert Path(result.report_json) == reports_dir / "bad-path.json"
+    assert (reports_dir / "bad-path.md").is_file()
+    assert (reports_dir / "bad-path.json").is_file()
+    assert not (project_root / "bad").exists()
+    assert not (tmp_path / "bad").exists()
+
+
 def test_notebook_qa_execute_captures_failure(tmp_path: Path) -> None:
     notebook_path = create_notebook_scaffold("SVD", base_dir=tmp_path)
     notebook = nbformat.read(notebook_path, as_version=4)

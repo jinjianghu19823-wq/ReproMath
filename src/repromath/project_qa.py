@@ -146,19 +146,40 @@ def _run_latex_if_available(
 
 def _run_notebook_checks(config: ProjectConfig) -> list[NotebookQaResult]:
     results: list[NotebookQaResult] = []
+    used_report_stems: set[str] = set()
     for artifact in config.artifacts:
         if artifact.artifact_type != "notebook":
             continue
         notebook_path = config.root / artifact.output
         if notebook_path.is_file():
+            report_stem = _unique_notebook_report_stem(
+                _notebook_report_stem(artifact),
+                used_report_stems,
+            )
             results.append(
                 run_notebook_qa(
                     notebook_path,
                     cwd=config.root,
-                    report_stem=_notebook_report_stem(artifact),
+                    report_stem=report_stem,
                 )
             )
     return results
+
+
+def _unique_notebook_report_stem(
+    report_stem: str,
+    used_report_stems: set[str],
+) -> str:
+    if report_stem not in used_report_stems:
+        used_report_stems.add(report_stem)
+        return report_stem
+
+    index = 2
+    while f"{report_stem}-{index}" in used_report_stems:
+        index += 1
+    unique_stem = f"{report_stem}-{index}"
+    used_report_stems.add(unique_stem)
+    return unique_stem
 
 
 def _notebook_report_stem(artifact: Artifact) -> str:
