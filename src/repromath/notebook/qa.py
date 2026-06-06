@@ -10,6 +10,7 @@ import re
 
 import nbformat
 
+from repromath import __version__
 from repromath.notebook.execute import NotebookExecutionResult, execute_notebook
 from repromath.notebook.sections import REQUIRED_SECTIONS
 
@@ -118,7 +119,7 @@ def run_notebook_qa(
     )
 
     markdown_path.write_text(_markdown_report(result), encoding="utf-8")
-    json_path.write_text(json.dumps(asdict(result), indent=2), encoding="utf-8")
+    json_path.write_text(json.dumps(_json_report(result), indent=2), encoding="utf-8")
     return result
 
 
@@ -333,3 +334,11 @@ def _format_runtime(seconds: float | None) -> str:
     if seconds is None:
         return "unknown runtime"
     return f"{seconds:.2f}s"
+
+
+def _json_report(result: NotebookQaResult) -> dict[str, object]:
+    return {
+        "schema_version": "repromath.notebook_qa.v1",
+        "tool_version": __version__,
+        **asdict(result),
+    }

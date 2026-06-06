@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from repromath import __version__
 from repromath.cli import run
 from repromath.notebook.scaffold import create_notebook_scaffold
 from repromath.project_init import create_project
@@ -68,6 +69,8 @@ used_in = "notes/missing.md"
     json_report = json.loads(
         (project_root / "reports" / "project_qa.json").read_text(encoding="utf-8")
     )
+    assert json_report["schema_version"] == "repromath.project_qa.v1"
+    assert json_report["tool_version"] == __version__
     assert json_report["artifact_checks"][0]["status"] == "FAIL"
     assert json_report["source_coverage_summary"]["missing_outputs"] == 1
 

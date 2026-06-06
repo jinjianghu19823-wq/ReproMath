@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 import json
 
+from repromath import __version__
 from repromath.config import ConfigError, ProjectConfig, load_project_config
 from repromath.latex.report import LatexQaResult, run_latex_qa
 from repromath.notebook.qa import NotebookQaResult, run_notebook_qa
@@ -247,7 +248,11 @@ def _suggested_actions(result: ProjectQaResult) -> list[str]:
 
 
 def _json_report(result: ProjectQaResult) -> dict[str, object]:
-    return asdict(result)
+    return {
+        "schema_version": "repromath.project_qa.v1",
+        "tool_version": __version__,
+        **asdict(result),
+    }
 
 
 def _artifact_table(checks: list[ArtifactCheck]) -> list[str]:

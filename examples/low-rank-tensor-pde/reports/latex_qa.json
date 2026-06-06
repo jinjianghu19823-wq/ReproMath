@@ -1,4 +1,6 @@
 {
+  "schema_version": "repromath.latex_qa.v1",
+  "tool_version": "0.2.0",
   "status": "PASS",
   "main_file": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/thesis/main.tex",
   "engine": "latexmk",

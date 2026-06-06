@@ -52,3 +52,6 @@ The project QA report includes an artifact status table with:
 The JSON report also includes a source coverage summary with artifact counts,
 source coverage, `used_in` coverage, missing outputs, and missing `used_in`
 files.
+
+Machine-readable QA JSON reports include `schema_version` and `tool_version`
+fields so external scripts can check the report format before consuming it.

@@ -35,3 +35,6 @@ Outputs:
 reports/notebook_qa.md
 reports/notebook_qa.json
 ```
+
+The JSON report includes `schema_version` and `tool_version` fields so external
+scripts can check the report format before consuming it.

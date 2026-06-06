@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from repromath import __version__
 from repromath.cli import run
 from repromath.latex.compile import LatexCompileResult
 from repromath.latex.parse_log import parse_latex_log_file
@@ -159,6 +160,8 @@ def test_latex_qa_without_engine_parses_existing_log_and_writes_reports(
     assert "## Fatal Errors" in markdown_report.read_text(encoding="utf-8")
     assert "## Errors" in markdown_report.read_text(encoding="utf-8")
     data = json.loads(json_report.read_text(encoding="utf-8"))
+    assert data["schema_version"] == "repromath.latex_qa.v1"
+    assert data["tool_version"] == __version__
     assert data["summary"]["undefined_citations"] == ["koldaBader2009"]
     assert data["problems"][0]["severity"] == "error"
     assert any(problem["kind"] == "missing_figure" for problem in data["problems"])

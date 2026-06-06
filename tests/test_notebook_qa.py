@@ -7,6 +7,7 @@ import pytest
 from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook, new_output
 import nbformat
 
+from repromath import __version__
 from repromath.cli import run
 from repromath.notebook.execute import NotebookExecutionResult
 from repromath.notebook.qa import run_notebook_qa
@@ -152,6 +153,8 @@ def test_cli_notebook_qa_writes_reports_in_project_root(tmp_path: Path) -> None:
     assert markdown_report.is_file()
     assert json_report.is_file()
     data = json.loads(json_report.read_text(encoding="utf-8"))
+    assert data["schema_version"] == "repromath.notebook_qa.v1"
+    assert data["tool_version"] == __version__
     assert data["status"] == "PASS"
     assert data["total_cells"] > data["code_cells"]
     assert data["stale_output_detected"] is False

@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 import json
 
+from repromath import __version__
 from repromath.latex.compile import LatexCompileResult, compile_with_latexmk
 from repromath.latex.parse_log import (
     LatexLogSummary,
@@ -238,6 +239,8 @@ def _unique_suggestions(problems: list[LatexProblem]) -> list[str]:
 
 def _json_report(result: LatexQaResult) -> dict[str, object]:
     return {
+        "schema_version": "repromath.latex_qa.v1",
+        "tool_version": __version__,
         **asdict(result),
         "summary": asdict(result.summary),
         "problems": [asdict(problem) for problem in result.summary.problems],

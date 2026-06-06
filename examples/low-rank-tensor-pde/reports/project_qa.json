@@ -1,4 +1,6 @@
 {
+  "schema_version": "repromath.project_qa.v1",
+  "tool_version": "0.2.0",
   "status": "PASS",
   "project_root": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde",
   "config_file": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/repromath.toml",
