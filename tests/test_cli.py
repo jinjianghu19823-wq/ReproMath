@@ -9,6 +9,11 @@ from repromath import __version__
 from repromath.cli import run
 from repromath.project_init import create_project
 
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback
+    import tomli as tomllib
+
 
 def test_run_version_prints_package_version(capsys) -> None:
     exit_code = run(["--version"])
@@ -34,6 +39,42 @@ def test_module_version_command_works() -> None:
     )
 
     assert completed.stdout.strip() == f"repromath {__version__}"
+
+
+def test_version_metadata_is_consistent() -> None:
+    project_root = Path(__file__).resolve().parents[1]
+    pyproject = tomllib.loads((project_root / "pyproject.toml").read_text())
+    changelog = (project_root / "CHANGELOG.md").read_text(encoding="utf-8")
+
+    assert pyproject["project"]["version"] == __version__
+    assert f"repromath {__version__}" == _run_module_cli(["--version"]).stdout.strip()
+    assert f"## {__version__}" in changelog
+
+
+def test_main_help_includes_workflow_and_examples() -> None:
+    completed = _run_module_cli(["--help"])
+
+    assert "Typical workflow:" in completed.stdout
+    assert "paper/theorem notes -> notebook -> figure -> LaTeX section -> QA reports" in completed.stdout
+    assert 'repromath scaffold notebook --topic "truncated HOSVD"' in completed.stdout
+
+
+def test_init_help_includes_examples_and_safety_note() -> None:
+    completed = _run_module_cli(["init", "--help"])
+
+    assert "Examples:" in completed.stdout
+    assert "repromath init dissertation my-dissertation" in completed.stdout
+    assert "refuses to overwrite" in completed.stdout
+
+
+def test_qa_and_scaffold_help_include_examples() -> None:
+    qa_help = _run_module_cli(["qa", "--help"]).stdout
+    scaffold_help = _run_module_cli(["scaffold", "--help"]).stdout
+
+    assert "repromath qa latex thesis/main.tex" in qa_help
+    assert "reports/" in qa_help
+    assert 'repromath scaffold notebook --topic "truncated HOSVD"' in scaffold_help
+    assert "repromath scaffold figure tensor-unfolding" in scaffold_help
 
 
 def test_init_dissertation_creates_expected_structure(tmp_path: Path) -> None:
@@ -104,3 +145,18 @@ def test_init_refuses_to_overwrite_existing_project(tmp_path: Path, capsys) -> N
     assert exit_code == 1
     assert "already exists" in captured.err
     assert sentinel.read_text(encoding="utf-8") == "do not overwrite"
+
+
+def _run_module_cli(args: list[str]) -> subprocess.CompletedProcess[str]:
+    project_root = Path(__file__).resolve().parents[1]
+    env = {
+        **os.environ,
+        "PYTHONPATH": str(project_root / "src"),
+    }
+    return subprocess.run(
+        [sys.executable, "-m", "repromath.cli", *args],
+        check=True,
+        capture_output=True,
+        env=env,
+        text=True,
+    )

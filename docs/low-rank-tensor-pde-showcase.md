@@ -1,26 +1,13 @@
 # Low-Rank Tensor PDE Showcase
 
-The showcase lives at:
+The public case study now lives at
+[Showcase: Low-Rank Tensor PDE](showcase-low-rank-tensor-pde.md).
+
+It explains the workflow:
 
 ```text
-examples/low-rank-tensor-pde
+paper/theorem study -> HOSVD notebook -> tensor figures -> LaTeX section -> QA reports
 ```
 
-It demonstrates:
-
-- a small dissertation-like LaTeX file
-- a generated truncated HOSVD notebook
-- tensor unfolding, singular value decay, and storage-vs-rank figures
-- `repromath.toml` source-to-output mappings
-- example LaTeX, notebook, and project QA reports
-
-Try:
-
-```bash
-cd examples/low-rank-tensor-pde
-repromath qa project
-```
-
-The showcase is intentionally small. It is not a full PDE solver; it is a
+The example remains intentionally small. It is not a full PDE solver; it is a
 checkable workflow example for organizing mathematical research artifacts.
-

@@ -18,8 +18,19 @@ class ArtifactCheck:
     artifact_type: str
     output: str
     output_exists: bool
+    source: str | None = None
     used_in: str | None = None
     used_in_exists: bool | None = None
+    status: str = "PASS"
+
+
+@dataclass(frozen=True)
+class SourceCoverageSummary:
+    artifact_count: int
+    artifacts_with_source: int
+    artifacts_with_used_in: int
+    missing_outputs: int
+    missing_used_in_files: int
 
 
 @dataclass(frozen=True)
@@ -29,6 +40,7 @@ class ProjectQaResult:
     config_file: str
     missing_files: list[str]
     artifact_checks: list[ArtifactCheck]
+    source_coverage_summary: SourceCoverageSummary
     latex_status: str | None
     latex_report: str | None
     notebook_statuses: list[dict[str, str]]
@@ -43,6 +55,7 @@ def run_project_qa(project_root: Path | None = None) -> ProjectQaResult:
 
     missing_files: list[str] = []
     artifact_checks = _check_artifacts(config, missing_files)
+    source_coverage_summary = _source_coverage_summary(artifact_checks)
     latex_result = _run_latex_if_available(config, missing_files)
     notebook_results = _run_notebook_checks(config)
 
@@ -56,6 +69,7 @@ def run_project_qa(project_root: Path | None = None) -> ProjectQaResult:
         config_file=str(config.config_path),
         missing_files=missing_files,
         artifact_checks=artifact_checks,
+        source_coverage_summary=source_coverage_summary,
         latex_status=latex_result.status if latex_result is not None else None,
         latex_report=latex_result.report_markdown if latex_result is not None else None,
         notebook_statuses=[
@@ -82,13 +96,16 @@ def _check_artifacts(config: ProjectConfig, missing_files: list[str]) -> list[Ar
         used_in_exists = None
         if artifact.used_in:
             used_in_exists = (config.root / artifact.used_in).is_file()
+        status = "PASS" if output_exists and used_in_exists is not False else "FAIL"
         check = ArtifactCheck(
             id=artifact.id,
             artifact_type=artifact.artifact_type,
             output=artifact.output,
             output_exists=output_exists,
+            source=artifact.source,
             used_in=artifact.used_in,
             used_in_exists=used_in_exists,
+            status=status,
         )
         checks.append(check)
         if not output_exists:
@@ -96,6 +113,20 @@ def _check_artifacts(config: ProjectConfig, missing_files: list[str]) -> list[Ar
         if artifact.used_in and not used_in_exists:
             missing_files.append(artifact.used_in)
     return checks
+
+
+def _source_coverage_summary(
+    artifact_checks: list[ArtifactCheck],
+) -> SourceCoverageSummary:
+    return SourceCoverageSummary(
+        artifact_count=len(artifact_checks),
+        artifacts_with_source=sum(1 for check in artifact_checks if check.source),
+        artifacts_with_used_in=sum(1 for check in artifact_checks if check.used_in),
+        missing_outputs=sum(1 for check in artifact_checks if not check.output_exists),
+        missing_used_in_files=sum(
+            1 for check in artifact_checks if check.used_in_exists is False
+        ),
+    )
 
 
 def _run_latex_if_available(
@@ -153,18 +184,27 @@ def _markdown_report(result: ProjectQaResult, config: ProjectConfig) -> str:
         f"* Root: {result.project_root}",
         f"* Config: {result.config_file}",
         "",
-        "## Declared Files",
+        "## Artifact Status",
         "",
     ]
     if result.artifact_checks:
-        for check in result.artifact_checks:
-            output_state = "present" if check.output_exists else "missing"
-            lines.append(f"* `{check.output}` ({check.artifact_type}): {output_state}")
-            if check.used_in is not None:
-                used_in_state = "present" if check.used_in_exists else "missing"
-                lines.append(f"* `{check.used_in}` (used_in): {used_in_state}")
+        lines.extend(_artifact_table(result.artifact_checks))
     else:
         lines.append("* No artifact entries declared yet.")
+
+    summary = result.source_coverage_summary
+    lines.extend(
+        [
+            "",
+            "## Source Coverage",
+            "",
+            f"* Artifacts: {summary.artifact_count}",
+            f"* Artifacts with source: {summary.artifacts_with_source}",
+            f"* Artifacts with used_in: {summary.artifacts_with_used_in}",
+            f"* Missing outputs: {summary.missing_outputs}",
+            f"* Missing used_in files: {summary.missing_used_in_files}",
+        ]
+    )
 
     lines.extend(["", "## Child QA", ""])
     if result.latex_status is not None:
@@ -210,9 +250,43 @@ def _json_report(result: ProjectQaResult) -> dict[str, object]:
     return asdict(result)
 
 
+def _artifact_table(checks: list[ArtifactCheck]) -> list[str]:
+    lines = [
+        "| id | type | output | output_exists | source | used_in | used_in_exists | status |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for check in checks:
+        lines.append(
+            " | ".join(
+                [
+                    f"| {_table_cell(check.id)}",
+                    _table_cell(check.artifact_type),
+                    _table_cell(check.output),
+                    "yes" if check.output_exists else "no",
+                    _table_cell(check.source),
+                    _table_cell(check.used_in),
+                    _used_in_state(check.used_in_exists),
+                    f"{check.status} |",
+                ]
+            )
+        )
+    return lines
+
+
+def _table_cell(value: str | None) -> str:
+    if value is None or value == "":
+        return "-"
+    return value.replace("|", "\\|").replace("\n", " ")
+
+
+def _used_in_state(value: bool | None) -> str:
+    if value is None:
+        return "-"
+    return "yes" if value else "no"
+
+
 def project_qa_from_cli() -> ProjectQaResult:
     try:
         return run_project_qa()
     except ConfigError:
         raise
-

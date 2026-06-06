@@ -24,6 +24,16 @@ def test_parse_missing_references_citations_and_files() -> None:
     assert summary.output_pdf is None
     assert summary.page_count is None
 
+    problems_by_kind = {problem.kind: problem for problem in summary.problems}
+    assert problems_by_kind["undefined_reference"].severity == "error"
+    assert problems_by_kind["undefined_reference"].line == 42
+    assert problems_by_kind["undefined_citation"].severity == "error"
+    assert problems_by_kind["missing_figure"].message == (
+        "Missing figure file: `thesis/figures/tensor_unfolding.pdf`"
+    )
+    assert problems_by_kind["missing_file"].message == "Missing file: `missing-package.sty`"
+    assert problems_by_kind["fatal_error"].severity == "fatal"
+
 
 def test_parse_overfull_underfull_and_page_count() -> None:
     summary = parse_latex_log_file(FIXTURES / "overfull.log")
@@ -32,6 +42,24 @@ def test_parse_overfull_underfull_and_page_count() -> None:
     assert summary.underfull_hbox_count == 1
     assert summary.output_pdf == "main.pdf"
     assert summary.page_count == 7
+    overfull_problems = [
+        problem for problem in summary.problems if problem.kind == "overfull_hbox"
+    ]
+    assert len(overfull_problems) == 2
+    assert overfull_problems[0].severity == "warning"
+    assert overfull_problems[0].line == 10
+    assert any(problem.kind == "underfull_hbox" for problem in summary.problems)
+    assert any(problem.kind == "pdf_summary" for problem in summary.problems)
+
+
+def test_parse_successful_log_has_pdf_summary_info_only() -> None:
+    summary = parse_latex_log_file(FIXTURES / "success.log")
+
+    assert not summary.has_problems
+    assert summary.output_pdf == "clean.pdf"
+    assert summary.page_count == 2
+    assert [problem.kind for problem in summary.problems] == ["pdf_summary"]
+    assert summary.problems[0].severity == "info"
 
 
 def test_latex_qa_without_engine_parses_existing_log_and_writes_reports(
@@ -61,8 +89,12 @@ def test_latex_qa_without_engine_parses_existing_log_and_writes_reports(
     assert "Undefined reference: `eq:hosvd-error-bound`" in markdown_report.read_text(
         encoding="utf-8"
     )
+    assert "## Fatal Errors" in markdown_report.read_text(encoding="utf-8")
+    assert "## Errors" in markdown_report.read_text(encoding="utf-8")
     data = json.loads(json_report.read_text(encoding="utf-8"))
     assert data["summary"]["undefined_citations"] == ["koldaBader2009"]
+    assert data["problems"][0]["severity"] == "error"
+    assert any(problem["kind"] == "missing_figure" for problem in data["problems"])
 
 
 def test_cli_latex_qa_writes_reports(tmp_path: Path, monkeypatch) -> None:
@@ -83,3 +115,6 @@ def test_cli_latex_qa_writes_reports(tmp_path: Path, monkeypatch) -> None:
     assert exit_code == 1
     assert (project_root / "reports" / "latex_qa.md").is_file()
     assert (project_root / "reports" / "latex_qa.json").is_file()
+    markdown = (project_root / "reports" / "latex_qa.md").read_text(encoding="utf-8")
+    assert "## Warnings" in markdown
+    assert "Overfull hbox: 12.0pt too wide" in markdown

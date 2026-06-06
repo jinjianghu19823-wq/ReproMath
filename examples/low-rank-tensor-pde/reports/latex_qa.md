@@ -16,6 +16,11 @@ Status: PASS
 
 * No problems found in the parsed LaTeX log.
 
+## Info
+
+* PDF written: `main.pdf` (3 pages)
+  Suggestion: No action needed for this item.
+
 ## Suggested Next Actions
 
 1. No immediate action needed from the parsed log.

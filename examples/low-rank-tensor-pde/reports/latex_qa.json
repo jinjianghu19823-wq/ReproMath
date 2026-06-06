@@ -17,8 +17,28 @@
     "underfull_hbox_count": 0,
     "fatal_errors": [],
     "output_pdf": "main.pdf",
-    "page_count": 3
+    "page_count": 3,
+    "problems": [
+      {
+        "severity": "info",
+        "kind": "pdf_summary",
+        "message": "PDF written: `main.pdf` (3 pages)",
+        "suggestion": "No action needed for this item.",
+        "context": null,
+        "line": null
+      }
+    ]
   },
   "report_markdown": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/reports/latex_qa.md",
-  "report_json": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/reports/latex_qa.json"
+  "report_json": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/reports/latex_qa.json",
+  "problems": [
+    {
+      "severity": "info",
+      "kind": "pdf_summary",
+      "message": "PDF written: `main.pdf` (3 pages)",
+      "suggestion": "No action needed for this item.",
+      "context": null,
+      "line": null
+    }
+  ]
 }

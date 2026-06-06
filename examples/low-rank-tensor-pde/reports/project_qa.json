@@ -9,34 +9,49 @@
       "artifact_type": "notebook",
       "output": "notebooks/truncated-hosvd.ipynb",
       "output_exists": true,
+      "source": "DeLathauwer2000",
       "used_in": null,
-      "used_in_exists": null
+      "used_in_exists": null,
+      "status": "PASS"
     },
     {
       "id": "fig_tensor_unfolding",
       "artifact_type": "figure",
       "output": "figures/tensor-unfolding.pdf",
       "output_exists": true,
+      "source": "KoldaBader2009",
       "used_in": "thesis/sections/tensor_notation.tex",
-      "used_in_exists": true
+      "used_in_exists": true,
+      "status": "PASS"
     },
     {
       "id": "fig_singular_value_decay",
       "artifact_type": "figure",
       "output": "figures/singular-value-decay.pdf",
       "output_exists": true,
+      "source": "low-rank diagnostic toy data",
       "used_in": "thesis/sections/numerical_diagnostics.tex",
-      "used_in_exists": true
+      "used_in_exists": true,
+      "status": "PASS"
     },
     {
       "id": "fig_storage_vs_rank",
       "artifact_type": "figure",
       "output": "figures/storage-vs-rank.pdf",
       "output_exists": true,
+      "source": "Tucker storage formula",
       "used_in": "thesis/sections/numerical_diagnostics.tex",
-      "used_in_exists": true
+      "used_in_exists": true,
+      "status": "PASS"
     }
   ],
+  "source_coverage_summary": {
+    "artifact_count": 4,
+    "artifacts_with_source": 4,
+    "artifacts_with_used_in": 3,
+    "missing_outputs": 0,
+    "missing_used_in_files": 0
+  },
   "latex_status": "PASS",
   "latex_report": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/reports/latex_qa.md",
   "notebook_statuses": [

@@ -7,7 +7,11 @@ from pathlib import Path
 import json
 
 from repromath.latex.compile import LatexCompileResult, compile_with_latexmk
-from repromath.latex.parse_log import LatexLogSummary, parse_latex_log_file
+from repromath.latex.parse_log import (
+    LatexLogSummary,
+    LatexProblem,
+    parse_latex_log_file,
+)
 
 
 @dataclass(frozen=True)
@@ -121,11 +125,17 @@ def _markdown_report(result: LatexQaResult, compile_result: LatexCompileResult) 
         lines.append(f"* Log file: {result.log_file}")
 
     lines.extend(["", "## Problems", ""])
-    problems = _problem_lines(result.summary)
-    if problems:
-        lines.extend(problems)
+    actionable_problems = [
+        problem for problem in result.summary.problems if problem.severity != "info"
+    ]
+    if actionable_problems:
+        lines.extend(_problem_sections(result.summary.problems))
     else:
         lines.append("* No problems found in the parsed LaTeX log.")
+        info_lines = _problems_by_severity(result.summary.problems).get("info", [])
+        if info_lines:
+            lines.extend(["", "## Info", ""])
+            lines.extend(_problem_lines(info_lines))
 
     if not result.compile_attempted:
         lines.extend(
@@ -152,34 +162,48 @@ def _markdown_report(result: LatexQaResult, compile_result: LatexCompileResult) 
     return "\n".join(lines)
 
 
-def _problem_lines(summary: LatexLogSummary) -> list[str]:
+def _problem_sections(problems: list[LatexProblem]) -> list[str]:
+    grouped = _problems_by_severity(problems)
+    sections = [
+        ("fatal", "## Fatal Errors"),
+        ("error", "## Errors"),
+        ("warning", "## Warnings"),
+        ("info", "## Info"),
+    ]
     lines: list[str] = []
-    for reference in summary.undefined_references:
-        lines.append(f"* Undefined reference: `{reference}`")
-    for citation in summary.undefined_citations:
-        lines.append(f"* Missing citation: `{citation}`")
-    for missing_file in summary.missing_files:
-        lines.append(f"* Missing file: `{missing_file}`")
-    if summary.overfull_hbox_count:
-        lines.append(f"* Overfull hbox: {summary.overfull_hbox_count} occurrences")
-    if summary.underfull_hbox_count:
-        lines.append(f"* Underfull hbox: {summary.underfull_hbox_count} occurrences")
-    for fatal_error in summary.fatal_errors:
-        lines.append(f"* Fatal/error line: `{fatal_error}`")
+    for severity, heading in sections:
+        severity_problems = grouped.get(severity, [])
+        if not severity_problems:
+            continue
+        lines.extend(["", heading, ""])
+        lines.extend(_problem_lines(severity_problems))
+    return lines
+
+
+def _problems_by_severity(
+    problems: list[LatexProblem],
+) -> dict[str, list[LatexProblem]]:
+    grouped: dict[str, list[LatexProblem]] = {}
+    for problem in problems:
+        grouped.setdefault(problem.severity, []).append(problem)
+    return grouped
+
+
+def _problem_lines(problems: list[LatexProblem]) -> list[str]:
+    lines: list[str] = []
+    for problem in problems:
+        line_text = f" (line {problem.line})" if problem.line is not None else ""
+        lines.append(f"* {problem.message}{line_text}")
+        if problem.suggestion:
+            lines.append(f"  Suggestion: {problem.suggestion}")
+        if problem.context:
+            lines.append(f"  Context: `{problem.context}`")
     return lines
 
 
 def _suggested_actions(result: LatexQaResult) -> list[str]:
     summary = result.summary
-    actions: list[str] = []
-    if summary.undefined_citations:
-        actions.append("Fix missing bibliography entries or rerun bibliography tooling.")
-    if summary.undefined_references:
-        actions.append("Check labels and rerun LaTeX enough times for references to resolve.")
-    if summary.missing_files:
-        actions.append("Check figure, bibliography, package, or input file paths.")
-    if summary.overfull_hbox_count or summary.underfull_hbox_count:
-        actions.append("Inspect the affected paragraphs and equations for layout issues.")
+    actions: list[str] = _unique_suggestions(summary.problems)
     if result.status == "WARN" and not result.compile_attempted:
         actions.append("Install `latexmk` or inspect the existing `.log` file manually.")
     if not result.pdf_produced:
@@ -189,8 +213,22 @@ def _suggested_actions(result: LatexQaResult) -> list[str]:
     return [f"{index}. {action}" for index, action in enumerate(actions, start=1)]
 
 
+def _unique_suggestions(problems: list[LatexProblem]) -> list[str]:
+    suggestions: list[str] = []
+    seen: set[str] = set()
+    for problem in problems:
+        if problem.severity == "info":
+            continue
+        suggestion = problem.suggestion
+        if suggestion and suggestion not in seen:
+            seen.add(suggestion)
+            suggestions.append(suggestion)
+    return suggestions
+
+
 def _json_report(result: LatexQaResult) -> dict[str, object]:
     return {
         **asdict(result),
         "summary": asdict(result.summary),
+        "problems": [asdict(problem) for problem in result.summary.problems],
     }

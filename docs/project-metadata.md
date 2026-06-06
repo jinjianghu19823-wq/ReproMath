@@ -40,3 +40,15 @@ diagnostics = ["relative_error", "storage_ratio", "orthogonality_error"]
 `repromath qa project` checks declared outputs, `used_in` files, LaTeX QA, and
 declared notebook QA.
 
+The project QA report includes an artifact status table with:
+
+* `id`;
+* `type`;
+* `output` and whether it exists;
+* `source`;
+* `used_in` and whether it exists;
+* artifact status.
+
+The JSON report also includes a source coverage summary with artifact counts,
+source coverage, `used_in` coverage, missing outputs, and missing `used_in`
+files.

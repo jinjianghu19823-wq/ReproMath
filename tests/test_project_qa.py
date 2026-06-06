@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from repromath.cli import run
@@ -20,6 +21,7 @@ def test_project_qa_works_on_generated_dissertation(
     assert result.status == "WARN"
     assert result.missing_files == []
     assert result.latex_status == "WARN"
+    assert result.source_coverage_summary.artifact_count == 0
     assert (project_root / "reports" / "project_qa.md").is_file()
     assert (project_root / "reports" / "project_qa.json").is_file()
     assert (project_root / "reports" / "latex_qa.md").is_file()
@@ -51,6 +53,23 @@ used_in = "notes/missing.md"
     assert result.status == "FAIL"
     assert "figures/missing.pdf" in result.missing_files
     assert "notes/missing.md" in result.missing_files
+    assert result.artifact_checks[0].source is None
+    assert result.artifact_checks[0].status == "FAIL"
+    assert result.source_coverage_summary.missing_outputs == 1
+    assert result.source_coverage_summary.missing_used_in_files == 1
+
+    markdown_report = (project_root / "reports" / "project_qa.md").read_text(
+        encoding="utf-8"
+    )
+    assert "| id | type | output | output_exists | source | used_in | used_in_exists | status |" in markdown_report
+    assert "| fig_missing | figure | figures/missing.pdf | no | -" in markdown_report
+    assert "notes/missing.md | no | FAIL |" in markdown_report
+
+    json_report = json.loads(
+        (project_root / "reports" / "project_qa.json").read_text(encoding="utf-8")
+    )
+    assert json_report["artifact_checks"][0]["status"] == "FAIL"
+    assert json_report["source_coverage_summary"]["missing_outputs"] == 1
 
 
 def test_project_qa_runs_notebook_qa_for_declared_notebook(tmp_path: Path) -> None:
@@ -79,6 +98,10 @@ role = "diagnostics"
     result = run_project_qa(project_root)
 
     assert result.status == "PASS"
+    assert result.artifact_checks[0].source == "toy"
+    assert result.artifact_checks[0].status == "PASS"
+    assert result.source_coverage_summary.artifact_count == 1
+    assert result.source_coverage_summary.artifacts_with_source == 1
     assert result.notebook_statuses == [
         {
             "notebook": str(notebook_path),

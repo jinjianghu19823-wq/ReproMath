@@ -19,6 +19,22 @@ paper -> theorem notes -> toy example -> notebook -> figure -> LaTeX section -> 
 ReproMath is not a notebook environment, a publishing system, a LaTeX engine,
 a theorem prover, a workflow engine, or a generic AI wrapper.
 
+## Why This Exists
+
+Mathematical research rarely lives in one file. A result often starts as a
+paper margin note, becomes a toy notebook, turns into a diagnostic figure,
+then lands in a LaTeX section and final PDF. ReproMath gives that path a thin
+layer of structure and QA without replacing the tools researchers already use.
+
+```text
+paper/theorem
+    -> study notebook
+    -> diagnostic figure
+    -> LaTeX section
+    -> QA reports
+    -> final PDF
+```
+
 ## Install
 
 For local development:
@@ -38,6 +54,28 @@ You can also run the CLI without installing:
 
 ```bash
 PYTHONPATH=src python -m repromath.cli --version
+```
+
+## 60-Second Demo
+
+```bash
+repromath init dissertation demo-dissertation
+cd demo-dissertation
+
+repromath scaffold notebook --topic "truncated HOSVD"
+repromath scaffold figure tensor-unfolding
+
+repromath qa latex thesis/main.tex
+repromath qa notebook notebooks/truncated-hosvd.ipynb
+repromath qa project
+```
+
+After those commands, inspect:
+
+```text
+reports/latex_qa.md
+reports/notebook_qa.md
+reports/project_qa.md
 ```
 
 ## Quickstart
@@ -120,15 +158,13 @@ Missing Files: None
 
 ## Showcase
 
-The first public showcase is:
+The first public showcase is
+[Showcase: Low-Rank Tensor PDE](docs/showcase-low-rank-tensor-pde.md).
 
-```text
-examples/low-rank-tensor-pde
-```
-
-It demonstrates a small low-rank tensor PDE dissertation workflow with a
-truncated HOSVD notebook, tensor figures, LaTeX sections, provenance mappings,
-and example QA reports.
+It demonstrates a small dissertation workflow with a truncated HOSVD notebook,
+tensor figures, LaTeX sections, `repromath.toml` provenance mappings, and
+example QA reports. A new user can read the showcase first to see the value of
+ReproMath before creating a fresh project.
 
 Try it after installing ReproMath:
 
@@ -146,7 +182,8 @@ repromath qa project
 - [Notebook QA](docs/notebook-qa.md)
 - [Figure recipes](docs/figure-recipes.md)
 - [Project metadata](docs/project-metadata.md)
-- [Low-rank tensor PDE showcase](docs/low-rank-tensor-pde-showcase.md)
+- [Showcase: Low-rank tensor PDE](docs/showcase-low-rank-tensor-pde.md)
+- [Release checklist](docs/release-checklist.md)
 - [Contributing](docs/contributing.md)
 
 ## License
