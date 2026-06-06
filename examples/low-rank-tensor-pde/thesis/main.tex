@@ -1,0 +1,25 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\graphicspath{{../figures/}}
+
+\title{Low-Rank Tensor PDE Dissertation Showcase}
+\author{ReproMath example}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Project Overview}
+
+This miniature dissertation project demonstrates how ReproMath can keep a
+mathematical research workflow checkable. A low-rank tensor PDE project often
+connects tensor notation, HOSVD-style approximations, numerical diagnostics,
+figures, and final LaTeX writing. The purpose of this example is to keep those
+artifacts small, reproducible, and mapped in \texttt{repromath.toml}.
+
+\input{sections/tensor_notation}
+\input{sections/numerical_diagnostics}
+
+\end{document}

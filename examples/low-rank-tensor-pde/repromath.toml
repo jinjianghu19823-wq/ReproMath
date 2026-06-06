@@ -1,0 +1,42 @@
+[project]
+name = "low-rank-tensor-pde"
+type = "dissertation"
+main_tex = "thesis/main.tex"
+
+[paths]
+notebooks = "notebooks"
+figures = "figures"
+reports = "reports"
+sources = "sources"
+
+[[artifacts]]
+id = "notebook_truncated_hosvd"
+type = "notebook"
+output = "notebooks/truncated-hosvd.ipynb"
+source = "DeLathauwer2000"
+role = "toy implementation and diagnostics"
+diagnostics = ["relative_error", "orthogonality_error", "storage_ratio"]
+
+[[artifacts]]
+id = "fig_tensor_unfolding"
+type = "figure"
+output = "figures/tensor-unfolding.pdf"
+source = "KoldaBader2009"
+role = "conceptual illustration"
+used_in = "thesis/sections/tensor_notation.tex"
+
+[[artifacts]]
+id = "fig_singular_value_decay"
+type = "figure"
+output = "figures/singular-value-decay.pdf"
+source = "low-rank diagnostic toy data"
+role = "diagnostic illustration"
+used_in = "thesis/sections/numerical_diagnostics.tex"
+
+[[artifacts]]
+id = "fig_storage_vs_rank"
+type = "figure"
+output = "figures/storage-vs-rank.pdf"
+source = "Tucker storage formula"
+role = "storage comparison"
+used_in = "thesis/sections/numerical_diagnostics.tex"

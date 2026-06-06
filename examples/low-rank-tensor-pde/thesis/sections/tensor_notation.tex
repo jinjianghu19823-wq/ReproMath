@@ -1,0 +1,19 @@
+\section{Tensor Notation}
+
+For a third-order tensor, a mode unfolding rewrites multiway data as a matrix
+view. This is not a change in the underlying data; it is a bookkeeping device
+that lets matrix tools such as the singular value decomposition act on one mode
+at a time.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.78\linewidth]{tensor-unfolding.pdf}
+  \caption{A conceptual mode unfolding used to connect tensor notation with
+  matrix computations.}
+  \label{fig:tensor-unfolding}
+\end{figure}
+
+In a truncated HOSVD study, the notebook records the factor matrices, the core
+tensor, and the diagnostics needed to decide whether a chosen multilinear rank
+is numerically reasonable.
+

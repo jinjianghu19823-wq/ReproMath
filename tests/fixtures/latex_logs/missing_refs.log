@@ -1,0 +1,8 @@
+This is pdfTeX, Version 3.141592653
+LaTeX Warning: Reference `eq:hosvd-error-bound' on page 3 undefined on input line 42.
+LaTeX Warning: Citation `koldaBader2009' on page 4 undefined on input line 55.
+Package pdftex.def Error: File `thesis/figures/tensor_unfolding.pdf' not found: using draft setting.
+! LaTeX Error: File `missing-package.sty' not found.
+Emergency stop.
+Fatal error occurred, no output PDF file produced!
+

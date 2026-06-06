@@ -1,0 +1,31 @@
+\section{Numerical Diagnostics}
+
+The first question in a low-rank approximation experiment is whether the
+singular values decay quickly enough to justify truncation. Figure
+\ref{fig:singular-value-decay} shows a toy comparison between fast and slow
+decay.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.72\linewidth]{singular-value-decay.pdf}
+  \caption{Toy singular value decay curves used as a diagnostic for low-rank
+  approximation.}
+  \label{fig:singular-value-decay}
+\end{figure}
+
+The second question is whether the compressed representation saves enough
+storage to justify the approximation. Figure \ref{fig:storage-vs-rank} compares
+full tensor storage with a simple equal-rank Tucker storage count.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.72\linewidth]{storage-vs-rank.pdf}
+  \caption{A lightweight storage comparison for a cubic tensor and equal Tucker
+  rank.}
+  \label{fig:storage-vs-rank}
+\end{figure}
+
+The corresponding notebook keeps these diagnostics close to the code that
+generates them, so that dissertation figures and computational checks can be
+reviewed together.
+

@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "main_file": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/thesis/main.tex",
+  "engine": "latexmk",
+  "engine_path": "/usr/local/texlive/2022/bin/universal-darwin/latexmk",
+  "compile_attempted": true,
+  "compile_returncode": 0,
+  "log_file": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/thesis/main.log",
+  "pdf_file": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/thesis/main.pdf",
+  "pdf_produced": true,
+  "page_count": 3,
+  "summary": {
+    "undefined_references": [],
+    "undefined_citations": [],
+    "missing_files": [],
+    "overfull_hbox_count": 0,
+    "underfull_hbox_count": 0,
+    "fatal_errors": [],
+    "output_pdf": "main.pdf",
+    "page_count": 3
+  },
+  "report_markdown": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/reports/latex_qa.md",
+  "report_json": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/reports/latex_qa.json"
+}

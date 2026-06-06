@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "notebook_file": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/notebooks/truncated-hosvd.ipynb",
+  "sections_found": [
+    "Title",
+    "Motivation",
+    "Mathematical setup",
+    "Definitions and notation",
+    "Algorithm",
+    "Naive implementation",
+    "Stable or recommended implementation",
+    "Numerical experiment",
+    "Diagnostics",
+    "Interpretation",
+    "Try it yourself",
+    "References"
+  ],
+  "missing_sections": [],
+  "has_code_cells": true,
+  "random_seed_found": true,
+  "execute_requested": false,
+  "execution_attempted": false,
+  "execution_passed": null,
+  "execution_error": null,
+  "report_markdown": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/reports/notebook_qa.md",
+  "report_json": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/reports/notebook_qa.json"
+}
