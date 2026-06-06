@@ -29,7 +29,7 @@ Status: PASS
 ## Child QA
 
 * LaTeX QA: PASS (/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/reports/latex_qa.md)
-* Notebook QA: PASS (/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/notebooks/truncated-hosvd.ipynb)
+* Notebook QA: PASS (/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/notebooks/truncated-hosvd.ipynb; report: /Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/reports/notebook_qa__notebook_truncated_hosvd.md)
 
 ## Missing Files
 

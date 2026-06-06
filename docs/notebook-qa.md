@@ -38,3 +38,9 @@ reports/notebook_qa.json
 
 The JSON report includes `schema_version` and `tool_version` fields so external
 scripts can check the report format before consuming it.
+
+Standalone notebook QA writes `reports/notebook_qa.md` and
+`reports/notebook_qa.json`. When notebook QA is launched from
+`repromath qa project`, ReproMath writes per-artifact child reports such as
+`reports/notebook_qa__notebook_truncated_hosvd.md` to avoid overwriting reports
+from multiple declared notebooks.

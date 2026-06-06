@@ -47,6 +47,7 @@ def run_notebook_qa(
     notebook_path: Path,
     execute: bool = False,
     cwd: Path | None = None,
+    report_stem: str = "notebook_qa",
 ) -> NotebookQaResult:
     notebook_path = notebook_path.expanduser()
     if not notebook_path.is_absolute():
@@ -88,8 +89,9 @@ def run_notebook_qa(
 
     reports_dir = _reports_dir(notebook_path, cwd=cwd)
     reports_dir.mkdir(parents=True, exist_ok=True)
-    markdown_path = reports_dir / "notebook_qa.md"
-    json_path = reports_dir / "notebook_qa.json"
+    report_stem = report_stem.strip() or "notebook_qa"
+    markdown_path = reports_dir / f"{report_stem}.md"
+    json_path = reports_dir / f"{report_stem}.json"
 
     result = NotebookQaResult(
         status=status,

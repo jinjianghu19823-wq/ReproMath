@@ -109,9 +109,74 @@ role = "diagnostics"
         {
             "notebook": str(notebook_path),
             "status": "PASS",
-            "report": str(project_root / "reports" / "notebook_qa.md"),
+            "report": str(project_root / "reports" / "notebook_qa__notebook_svd.md"),
         }
     ]
+    assert (project_root / "reports" / "notebook_qa__notebook_svd.md").is_file()
+    assert (project_root / "reports" / "notebook_qa__notebook_svd.json").is_file()
+    assert not (project_root / "reports" / "notebook_qa.md").exists()
+
+
+def test_project_qa_writes_distinct_child_reports_for_multiple_notebooks(
+    tmp_path: Path,
+) -> None:
+    project_root = tmp_path / "project"
+    project_root.mkdir()
+    first_path = create_notebook_scaffold("First", base_dir=project_root)
+    second_path = create_notebook_scaffold("Second", base_dir=project_root)
+    (project_root / "repromath.toml").write_text(
+        f"""
+[project]
+name = "demo"
+type = "numerical-experiment"
+
+[paths]
+reports = "reports"
+
+[[artifacts]]
+id = "notebook_first"
+type = "notebook"
+output = "{first_path.relative_to(project_root)}"
+source = "toy"
+
+[[artifacts]]
+id = "Notebook Second: Exploratory"
+type = "notebook"
+output = "{second_path.relative_to(project_root)}"
+source = "toy"
+""",
+        encoding="utf-8",
+    )
+
+    result = run_project_qa(project_root)
+
+    assert result.status == "PASS"
+    assert len(result.notebook_statuses) == 2
+    child_reports = [Path(item["report"]) for item in result.notebook_statuses]
+    assert child_reports == [
+        project_root / "reports" / "notebook_qa__notebook_first.md",
+        project_root / "reports" / "notebook_qa__notebook-second-exploratory.md",
+    ]
+    assert len(set(child_reports)) == 2
+    assert not (project_root / "reports" / "notebook_qa.md").exists()
+    for markdown_report in child_reports:
+        json_report = markdown_report.with_suffix(".json")
+        assert markdown_report.is_file()
+        assert json_report.is_file()
+
+    project_json = json.loads(
+        (project_root / "reports" / "project_qa.json").read_text(encoding="utf-8")
+    )
+    json_child_reports = [
+        Path(item["report"]) for item in project_json["notebook_statuses"]
+    ]
+    assert json_child_reports == child_reports
+
+    project_markdown = (project_root / "reports" / "project_qa.md").read_text(
+        encoding="utf-8"
+    )
+    assert "notebook_qa__notebook_first.md" in project_markdown
+    assert "notebook_qa__notebook-second-exploratory.md" in project_markdown
 
 
 def test_cli_project_qa_writes_reports(tmp_path: Path, monkeypatch) -> None:

@@ -55,3 +55,8 @@ files.
 
 Machine-readable QA JSON reports include `schema_version` and `tool_version`
 fields so external scripts can check the report format before consuming it.
+
+When `repromath qa project` runs notebook QA for declared notebook artifacts, it
+writes distinct child notebook reports keyed by artifact id, for example
+`reports/notebook_qa__notebook_truncated_hosvd.md`. This keeps multiple
+declared notebooks from overwriting each other's child QA reports.

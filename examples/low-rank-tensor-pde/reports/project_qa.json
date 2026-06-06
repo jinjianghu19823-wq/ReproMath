@@ -60,7 +60,7 @@
     {
       "notebook": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/notebooks/truncated-hosvd.ipynb",
       "status": "PASS",
-      "report": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/reports/notebook_qa.md"
+      "report": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/reports/notebook_qa__notebook_truncated_hosvd.md"
     }
   ],
   "report_markdown": "/Users/hujinjiang/Documents/ReproMath/examples/low-rank-tensor-pde/reports/project_qa.md",

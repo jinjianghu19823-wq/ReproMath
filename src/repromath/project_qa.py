@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from pathlib import Path
 import json
+import re
 
 from repromath import __version__
 from repromath.config import ConfigError, ProjectConfig, load_project_config
@@ -150,8 +151,26 @@ def _run_notebook_checks(config: ProjectConfig) -> list[NotebookQaResult]:
             continue
         notebook_path = config.root / artifact.output
         if notebook_path.is_file():
-            results.append(run_notebook_qa(notebook_path, cwd=config.root))
+            results.append(
+                run_notebook_qa(
+                    notebook_path,
+                    cwd=config.root,
+                    report_stem=_notebook_report_stem(artifact),
+                )
+            )
     return results
+
+
+def _notebook_report_stem(artifact: Artifact) -> str:
+    identifier = artifact.id.strip() or Path(artifact.output).stem
+    safe_identifier = re.sub(
+        r"[^a-z0-9_.-]+",
+        "-",
+        identifier.strip().lower(),
+    ).strip("-_.")
+    if not safe_identifier:
+        safe_identifier = "notebook"
+    return f"notebook_qa__{safe_identifier}"
 
 
 def _project_status(
@@ -214,7 +233,10 @@ def _markdown_report(result: ProjectQaResult, config: ProjectConfig) -> str:
         lines.append("* LaTeX QA: not run")
     if result.notebook_statuses:
         for item in result.notebook_statuses:
-            lines.append(f"* Notebook QA: {item['status']} ({item['notebook']})")
+            lines.append(
+                f"* Notebook QA: {item['status']} "
+                f"({item['notebook']}; report: {item['report']})"
+            )
     else:
         lines.append("* Notebook QA: no declared notebook artifacts found")
 
