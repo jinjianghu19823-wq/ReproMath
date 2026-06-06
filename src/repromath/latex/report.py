@@ -87,8 +87,9 @@ def _status(
 ) -> str:
     if compile_result.attempted and compile_result.returncode not in {0, None}:
         return "FAIL"
-    if summary.has_problems:
-        return "FAIL"
+    problem_status = _problem_status(summary)
+    if problem_status is not None:
+        return problem_status
     if not compile_result.attempted:
         return "WARN"
     if not log_path.is_file():
@@ -96,6 +97,15 @@ def _status(
     if not pdf_produced:
         return "WARN"
     return "PASS"
+
+
+def _problem_status(summary: LatexLogSummary) -> str | None:
+    severities = {problem.severity for problem in summary.problems}
+    if severities & {"fatal", "error"}:
+        return "FAIL"
+    if "warning" in severities:
+        return "WARN"
+    return None
 
 
 def _reports_dir(tex_path: Path, cwd: Path | None = None) -> Path:

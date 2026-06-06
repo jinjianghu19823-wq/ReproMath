@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from repromath.cli import run
+from repromath.latex.compile import LatexCompileResult
 from repromath.latex.parse_log import parse_latex_log_file
 from repromath.latex.report import run_latex_qa
 
@@ -62,6 +63,72 @@ def test_parse_successful_log_has_pdf_summary_info_only() -> None:
     assert summary.problems[0].severity == "info"
 
 
+def test_latex_qa_warning_only_log_reports_warn(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    project_root = tmp_path / "project"
+    thesis_dir = project_root / "thesis"
+    thesis_dir.mkdir(parents=True)
+    (project_root / "repromath.toml").write_text("[project]\nname = \"x\"\n", encoding="utf-8")
+    tex_path = thesis_dir / "main.tex"
+    tex_path.write_text("\\documentclass{article}\\begin{document}x\\end{document}\n", encoding="utf-8")
+    tex_path.with_suffix(".log").write_text(
+        (FIXTURES / "overfull.log").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "repromath.latex.report.compile_with_latexmk",
+        lambda _: LatexCompileResult(
+            engine="latexmk",
+            engine_path="/usr/bin/latexmk",
+            attempted=True,
+            returncode=0,
+            stdout="",
+            stderr="",
+        ),
+    )
+
+    result = run_latex_qa(tex_path)
+
+    assert result.status == "WARN"
+    assert result.summary.overfull_hbox_count == 2
+    assert result.summary.underfull_hbox_count == 1
+
+
+def test_latex_qa_successful_log_reports_pass(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    project_root = tmp_path / "project"
+    thesis_dir = project_root / "thesis"
+    thesis_dir.mkdir(parents=True)
+    (project_root / "repromath.toml").write_text("[project]\nname = \"x\"\n", encoding="utf-8")
+    tex_path = thesis_dir / "main.tex"
+    tex_path.write_text("\\documentclass{article}\\begin{document}x\\end{document}\n", encoding="utf-8")
+    tex_path.with_suffix(".log").write_text(
+        (FIXTURES / "success.log").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "repromath.latex.report.compile_with_latexmk",
+        lambda _: LatexCompileResult(
+            engine="latexmk",
+            engine_path="/usr/bin/latexmk",
+            attempted=True,
+            returncode=0,
+            stdout="",
+            stderr="",
+        ),
+    )
+
+    result = run_latex_qa(tex_path)
+
+    assert result.status == "PASS"
+    assert result.summary.output_pdf == "clean.pdf"
+    assert result.summary.page_count == 2
+
+
 def test_latex_qa_without_engine_parses_existing_log_and_writes_reports(
     tmp_path: Path,
     monkeypatch,
@@ -97,7 +164,7 @@ def test_latex_qa_without_engine_parses_existing_log_and_writes_reports(
     assert any(problem["kind"] == "missing_figure" for problem in data["problems"])
 
 
-def test_cli_latex_qa_writes_reports(tmp_path: Path, monkeypatch) -> None:
+def test_cli_latex_qa_warning_only_log_exits_zero(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr("repromath.latex.compile.shutil.which", lambda _: None)
     project_root = tmp_path / "project"
     thesis_dir = project_root / "thesis"
@@ -112,9 +179,30 @@ def test_cli_latex_qa_writes_reports(tmp_path: Path, monkeypatch) -> None:
 
     exit_code = run(["qa", "latex", str(tex_path)])
 
-    assert exit_code == 1
+    assert exit_code == 0
     assert (project_root / "reports" / "latex_qa.md").is_file()
     assert (project_root / "reports" / "latex_qa.json").is_file()
     markdown = (project_root / "reports" / "latex_qa.md").read_text(encoding="utf-8")
+    assert "Status: WARN" in markdown
     assert "## Warnings" in markdown
     assert "Overfull hbox: 12.0pt too wide" in markdown
+
+
+def test_cli_latex_qa_error_log_exits_nonzero(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr("repromath.latex.compile.shutil.which", lambda _: None)
+    project_root = tmp_path / "project"
+    thesis_dir = project_root / "thesis"
+    thesis_dir.mkdir(parents=True)
+    (project_root / "repromath.toml").write_text("[project]\nname = \"x\"\n", encoding="utf-8")
+    tex_path = thesis_dir / "main.tex"
+    tex_path.write_text("\\documentclass{article}\\begin{document}x\\end{document}\n", encoding="utf-8")
+    tex_path.with_suffix(".log").write_text(
+        (FIXTURES / "missing_refs.log").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+
+    exit_code = run(["qa", "latex", str(tex_path)])
+
+    assert exit_code == 1
+    markdown = (project_root / "reports" / "latex_qa.md").read_text(encoding="utf-8")
+    assert "Status: FAIL" in markdown

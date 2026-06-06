@@ -47,7 +47,7 @@ repromath --version
 Expected version:
 
 ```text
-repromath 0.1.0
+repromath 0.2.0
 ```
 
 You can also run the CLI without installing:
